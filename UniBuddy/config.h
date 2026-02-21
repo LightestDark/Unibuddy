@@ -1,34 +1,39 @@
 #pragma once
 /*
  * ============================================================
- *  config.h - Central configuration for UniBuddy
+ *  config.h — Central configuration for UniBuddy
+ *  Tilt-based mode switching via Modulino Movement
  * ============================================================
  */
 
 // Uncomment for rapid testing (10s focus / 3s break / 5s long break)
 // #define TEST_MODE
 
+// ── App modes (tilt-detected) ───────────────────────────────
 enum AppMode {
-  MODE_IDLE,
-  MODE_POMODORO,
-  MODE_BREAK,
-  MODE_NUDGE,
-  MODE_STATS
+  MODE_PET,            // standing upright  (roll < -70)   landscape ROTATE_270
+  MODE_SLEEP,          // lying flat        (|roll| < 25)  landscape (adaptive)
+  MODE_TEMPTIME_L,     // tilted left       (roll -70..-25) portrait ROTATE_0
+  MODE_TEMPTIME_R,     // tilted right      (roll  25..70)  portrait ROTATE_180
+  MODE_POMODORO,       // flipped upright   (roll > 70)    landscape ROTATE_90
+  MODE_BREAK,          // (internal, same orientation as pomodoro)
+  MODE_FACEDOWN        // accZ < -0.5  →  no display update
 };
 
-// Pin assignments
+// ── Pin assignments ─────────────────────────────────────────
 // E-Paper SPI: RST=D8 DC=D9 CS=D10 BUSY=D7 DIN=D11 CLK=D13
-#define PIN_BUTTON        4     // main button (INPUT_PULLUP)
-#define PIN_TAP_KY031     2     // KY031 knock/tap sensor
-#define PIN_MOVEMENT      3     // Movement sensor trigger
+#define PIN_BUTTON        4
+#define PIN_TAP_KY031     2
+#define PIN_MOVEMENT      3
+#define USE_SERVO_NUDGE   0
 
-#define USE_SERVO_NUDGE   0     // 1 when SG90 wired
+// ── Display ─────────────────────────────────────────────────
+#define DISPLAY_WIDTH     250     // landscape
+#define DISPLAY_HEIGHT    122
+#define PORTRAIT_WIDTH    122     // portrait
+#define PORTRAIT_HEIGHT   250
 
-// Display (landscape after ROTATE_270)
-#define DISPLAY_WIDTH   250
-#define DISPLAY_HEIGHT  122
-
-// Pomodoro durations (ms)
+// ── Pomodoro durations (ms) ─────────────────────────────────
 #ifdef TEST_MODE
   #define POMODORO_DURATION  (10UL * 1000)
   #define SHORT_BREAK        ( 3UL * 1000)
@@ -39,14 +44,22 @@ enum AppMode {
   #define LONG_BREAK         (15UL * 60 * 1000)
 #endif
 
-// Button timing (ms)
+// ── Button timing (ms) ─────────────────────────────────────
 #define BTN_DEBOUNCE_MS    50
 #define BTN_LONG_PRESS_MS  600
 
-// Servo
+// ── Tilt detection thresholds ───────────────────────────────
+#define TILT_ROLL_PET         -70.0f
+#define TILT_ROLL_POMO         70.0f
+#define TILT_ROLL_SLEEP_LO    -25.0f
+#define TILT_ROLL_SLEEP_HI     25.0f
+#define TILT_FACEDOWN_Z       -0.5f
+#define TILT_DEBOUNCE_COUNT    3
+
+// ── Servo ───────────────────────────────────────────────────
 #define SERVO_REST_ANGLE   0
 #define SERVO_WAVE_ANGLE   90
 #define SERVO_NUDGE_ANGLE  45
 
-// Behaviour / EEPROM
+// ── Behaviour / EEPROM ──────────────────────────────────────
 #define MAX_SESSIONS_STORED  20
