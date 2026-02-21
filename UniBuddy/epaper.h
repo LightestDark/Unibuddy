@@ -11,6 +11,7 @@
 #include "epd2in13_V4.h"
 #include "epdpaint.h"
 #include "pet.h"
+#include "eyes_renderer.h"
 #include "pomodoro.h"
 #include "behaviour.h"
 
@@ -26,7 +27,6 @@ static const int PARTIAL_LIMIT = 30;
 
 // Forward declarations
 void drawBuddyEyes(int originX, int originY);
-void drawSingleEye(int x, int y, int w, int h, PetMood mood, int8_t pupilOffsetX, uint8_t blinkLevel, bool leftEye);
 void drawTimer(uint32_t seconds, int x, int y, sFONT* font);
 void drawProgressBar(int x, int y, int w, int h, float progress);
 void drawCenteredString(int y, const char* text, sFONT* font);
@@ -163,86 +163,7 @@ void drawBuddyEyes(int originX, int originY) {
   const int eyeW = 58;
   const int eyeH = 34;
   const int eyeGap = 18;
-  int8_t pupilOffsetX = getPetEyeOffsetX();
-  uint8_t blinkLevel = getPetBlinkLevel();
-  PetMood mood = getPetMood();
-  drawSingleEye(originX, originY, eyeW, eyeH, mood, pupilOffsetX, blinkLevel, true);
-  drawSingleEye(originX + eyeW + eyeGap, originY, eyeW, eyeH, mood, pupilOffsetX, blinkLevel, false);
-}
-
-void drawSingleEye(int x, int y, int w, int h, PetMood mood, int8_t pupilOffsetX, uint8_t blinkLevel, bool leftEye) {
-  int cx = x + w / 2;
-  int cy = y + h / 2;
-
-  paint.DrawRectangle(x, y, x + w, y + h, COL_BLACK);
-
-  if (blinkLevel == 2) {
-    paint.DrawHorizontalLine(x + 4, cy, w - 8, COL_BLACK);
-    return;
-  }
-  if (blinkLevel == 1) {
-    paint.DrawHorizontalLine(x + 6, cy - 2, w - 12, COL_BLACK);
-    paint.DrawHorizontalLine(x + 6, cy + 2, w - 12, COL_BLACK);
-    return;
-  }
-
-  int pupilW = 10;
-  int pupilH = 10;
-  int pupilX = cx - pupilW / 2 + pupilOffsetX;
-  int pupilY = cy - pupilH / 2;
-
-  switch (mood) {
-    case MOOD_HAPPY:
-      paint.DrawLine(x + 5, y + h - 8, x + w - 6, y + h - 8, COL_BLACK);
-      paint.DrawLine(x + 8, y + h - 11, x + w - 9, y + h - 11, COL_BLACK);
-      break;
-    case MOOD_INTERESTED:
-      paint.DrawCircle(cx, cy, 12, COL_BLACK);
-      break;
-    case MOOD_SAD:
-      paint.DrawLine(x + 6, y + 8, x + w - 8, y + 12, COL_BLACK);
-      paint.DrawLine(x + 6, y + 10, x + w - 8, y + 14, COL_BLACK);
-      pupilY += 3;
-      break;
-    case MOOD_ANGRY:
-      if (leftEye)
-        paint.DrawLine(x + 6, y + 8, x + w - 8, y + 2, COL_BLACK);
-      else
-        paint.DrawLine(x + 6, y + 2, x + w - 8, y + 8, COL_BLACK);
-      paint.DrawLine(x + 6, y + 10, x + w - 8, y + 4, COL_BLACK);
-      break;
-    case MOOD_CONFUSED:
-      if (leftEye)
-        paint.DrawLine(x + 8, y + 5, x + w - 10, y + 5, COL_BLACK);
-      else
-        paint.DrawLine(x + 8, y + 10, x + w - 10, y + 2, COL_BLACK);
-      break;
-    case MOOD_DESPISED:
-      paint.DrawHorizontalLine(x + 6, y + 12, w - 12, COL_BLACK);
-      paint.DrawHorizontalLine(x + 6, y + 13, w - 12, COL_BLACK);
-      pupilH = 6;
-      pupilY += 2;
-      break;
-    case MOOD_TIRED:
-      paint.DrawLine(x + 6, y + 11, x + w - 8, y + 13, COL_BLACK);
-      paint.DrawLine(x + 6, y + 13, x + w - 8, y + 15, COL_BLACK);
-      pupilH = 7;
-      pupilY += 4;
-      break;
-    case MOOD_ASLEEP:
-      paint.DrawLine(x + 8, y + 12, x + 18, y + 12, COL_BLACK);
-      paint.DrawLine(x + 16, y + 16, x + 28, y + 16, COL_BLACK);
-      paint.DrawLine(x + 24, y + 12, x + 36, y + 12, COL_BLACK);
-      paint.DrawLine(x + 32, y + 16, x + 44, y + 16, COL_BLACK);
-      return;
-    case MOOD_FOCUSED:
-    default:
-      paint.DrawHorizontalLine(x + 6, y + 7, w - 12, COL_BLACK);
-      paint.DrawHorizontalLine(x + 6, y + 8, w - 12, COL_BLACK);
-      break;
-  }
-
-  paint.DrawFilledRectangle(pupilX, pupilY, pupilX + pupilW, pupilY + pupilH, COL_BLACK);
+  drawEyePairEmotion(paint, originX, originY, eyeW, eyeH, eyeGap, getEyeEmotion(), getEyeAnimPhase(), COL_BLACK);
 }
 
 void drawTimer(uint32_t seconds, int x, int y, sFONT* font) {

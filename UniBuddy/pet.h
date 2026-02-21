@@ -8,6 +8,7 @@
  * ────────────────────────────────────────────────────────────
  */
 #include <Arduino.h>
+#include "eyes.h"
 
 // ── Pet emotions ─────────────────────────────────────────────
 enum PetMood {
@@ -24,33 +25,29 @@ enum PetMood {
 
 // ── Internal state ──────────────────────────────────────────
 static PetMood  _mood          = MOOD_HAPPY;
-static uint8_t  _animPhase     = 0;
-static uint32_t _lastAnimTick  = 0;
 
-const uint8_t PET_ANIM_PHASES = 8;
-const uint16_t PET_ANIM_INTERVALS[PET_ANIM_PHASES] = {
-  1800, // open center
-  350,  // glance left
-  350,  // center
-  350,  // glance right
-  1200, // center
-  140,  // blink half
-  120,  // blink closed
-  140   // blink half
-};
+EyeEmotion mapMoodToEyeEmotion(PetMood mood) {
+  switch (mood) {
+    case MOOD_HAPPY:      return EYE_HAPPY;
+    case MOOD_INTERESTED: return EYE_NEUTRAL;
+    case MOOD_SAD:        return EYE_SAD;
+    case MOOD_ANGRY:      return EYE_ANNOYED;
+    case MOOD_CONFUSED:   return EYE_WORRIED;
+    case MOOD_DESPISED:   return EYE_BORED;
+    case MOOD_TIRED:      return EYE_TIRED;
+    case MOOD_ASLEEP:     return EYE_SLEEP;
+    case MOOD_FOCUSED:
+    default:              return EYE_NEUTRAL;
+  }
+}
 
 bool tickPetAnimation() {
-  uint16_t interval = PET_ANIM_INTERVALS[_animPhase];
-  if (millis() - _lastAnimTick < interval) return false;
-  _lastAnimTick = millis();
-  _animPhase = (_animPhase + 1) % PET_ANIM_PHASES;
-  return true;
+  return tickEyeEmotionAnimation();
 }
 
 void setPetMood(PetMood mood) {
   _mood = mood;
-  _animPhase = 0;
-  _lastAnimTick = millis();
+  setEyeEmotion(mapMoodToEyeEmotion(mood));
 }
 
 PetMood getPetMood() { return _mood; }
@@ -71,19 +68,19 @@ const char* getPetMoodName() {
 }
 
 uint8_t getPetAnimPhase() {
-  return _animPhase;
+  return getEyeAnimPhase();
 }
 
 int8_t getPetEyeOffsetX() {
-  if (_animPhase == 1) return -4;
-  if (_animPhase == 3) return 4;
-  return 0;
+  EyeFrame left = getEyeFrame(getEyeEmotion(), getEyeAnimPhase(), true);
+  return left.pupilX;
 }
 
 uint8_t getPetBlinkLevel() {
-  if (_animPhase == 6) return 2; // closed
-  if (_animPhase == 5 || _animPhase == 7) return 1; // half
-  return 0; // open
+  EyeFrame left = getEyeFrame(getEyeEmotion(), getEyeAnimPhase(), true);
+  if (left.lineStyle != EYE_LINE_OPEN) return 2;
+  if (left.upperLid >= 2) return 1;
+  return 0;
 }
 
 // Call after N sessions to update a default ambient emotion
