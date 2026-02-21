@@ -21,7 +21,7 @@
 #include <SPI.h>
 #include <Wire.h>
 #include <Modulino.h>
-#include "epd2in13_V2.h"
+#include "epd2in13_V4.h"
 #include "epdpaint.h"
 
 // ── E-Paper setup ─────────────────────────────────────────────
@@ -153,3 +153,4 @@ void loop() {
 
   delay(50);
 }
+
