@@ -49,12 +49,15 @@ enum AppMode {
 #define BTN_LONG_PRESS_MS  600
 
 // ── Tilt detection thresholds ───────────────────────────────
-#define TILT_ROLL_PET         -70.0f
-#define TILT_ROLL_POMO         70.0f
-#define TILT_ROLL_SLEEP_LO    -25.0f
-#define TILT_ROLL_SLEEP_HI     25.0f
+#define TILT_ROLL_PET         -70.0f   //  < -70 = PET
+#define TILT_ROLL_POMO         70.0f   //  >  70 = POMODORO
+#define TILT_ROLL_SLEEP_LO    -35.0f   // -35..35 = SLEEP (wider)
+#define TILT_ROLL_SLEEP_HI     35.0f
+#define TILT_ROLL_CAL_LO      -65.0f   // -65..-35 = TEMPTIME_L (narrower)
+#define TILT_ROLL_CAL_HI       65.0f   //  35..65 = TEMPTIME_R (narrower)
+#define TILT_HYSTERESIS        10.0f   // extra margin to LEAVE current mode
 #define TILT_FACEDOWN_Z       -0.5f
-#define TILT_DEBOUNCE_COUNT    3
+#define TILT_DEBOUNCE_COUNT    5
 
 // ── Servo ───────────────────────────────────────────────────
 #define SERVO_REST_ANGLE   0
